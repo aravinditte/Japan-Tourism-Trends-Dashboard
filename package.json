@@ -1,16 +1,22 @@
 {
   "name": "japan-tourism-dashboard-api",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Real-time Japan Tourism Analytics Dashboard API with Node.js, Express, MongoDB, and WebSocket support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "dev:client": "cd client && npm start",
+    "dev:full": "concurrently \"npm run dev\" \"npm run dev:client\"",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "build": "npm run build:client",
     "build:client": "cd client && npm run build",
     "seed": "node scripts/seedData.js",
-    "scrape": "node scripts/scrapeJNTO.js"
+    "scrape": "node scripts/scrapeJNTO.js",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix"
   },
   "keywords": ["tourism", "japan", "analytics", "dashboard", "nodejs", "mongodb", "websocket", "real-time"],
   "author": "Tourism Analytics Team",
@@ -35,14 +41,16 @@
     "winston": "^3.10.0",
     "rate-limiter-flexible": "^2.4.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "concurrently": "^8.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
     "jest": "^29.6.2",
     "supertest": "^6.3.3",
     "@types/node": "^20.5.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.1.6",
+    "eslint": "^8.48.0"
   },
   "engines": {
     "node": ">=16.0.0",
