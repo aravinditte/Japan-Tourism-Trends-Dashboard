@@ -1,0 +1,132 @@
+{
+  "annual_data": {
+    "2019": {
+      "South Korea": 5584737,
+      "China": 9594300,
+      "Taiwan": 4890000,
+      "USA": 1723861,
+      "Hong Kong": 2290792
+    },
+    "2020": {
+      "South Korea": 265477,
+      "China": 87400,
+      "Taiwan": 171218,
+      "USA": 434834,
+      "Hong Kong": 73008
+    },
+    "2021": {
+      "South Korea": 51705,
+      "China": 25500,
+      "Taiwan": 34567,
+      "USA": 98432,
+      "Hong Kong": 15234
+    },
+    "2022": {
+      "South Korea": 1123429,
+      "China": 195400,
+      "Taiwan": 894567,
+      "USA": 1345623,
+      "Hong Kong": 234567
+    },
+    "2023": {
+      "South Korea": 6958000,
+      "China": 2426000,
+      "Taiwan": 4201000,
+      "USA": 2044000,
+      "Hong Kong": 2115000
+    },
+    "2024": {
+      "South Korea": 8817800,
+      "China": 6981200,
+      "Taiwan": 6044400,
+      "USA": 2724600,
+      "Hong Kong": 2683500
+    },
+    "2025": {
+      "South Korea": 7861300,
+      "China": 10796000,
+      "Taiwan": 5679400,
+      "USA": 2571900,
+      "Hong Kong": 2243100
+    }
+  },
+  "monthly_2025": {
+    "January": {
+      "South Korea": 729800,
+      "China": 1018600,
+      "Taiwan": 585000,
+      "USA": 345100,
+      "Hong Kong": 226100
+    },
+    "February": {
+      "South Korea": 751200,
+      "China": 967400,
+      "Taiwan": 592300,
+      "USA": 356700,
+      "Hong Kong": 234500
+    },
+    "March": {
+      "South Korea": 823400,
+      "China": 1124800,
+      "Taiwan": 634200,
+      "USA": 378900,
+      "Hong Kong": 248600
+    },
+    "April": {
+      "South Korea": 889200,
+      "China": 1245600,
+      "Taiwan": 678900,
+      "USA": 398500,
+      "Hong Kong": 267800
+    },
+    "May": {
+      "South Korea": 912500,
+      "China": 1298700,
+      "Taiwan": 701400,
+      "USA": 412300,
+      "Hong Kong": 275900
+    },
+    "June": {
+      "South Korea": 797900,
+      "China": 1018600,
+      "Taiwan": 620700,
+      "USA": 194500,
+      "Hong Kong": 166800
+    },
+    "July": {
+      "South Korea": 751300,
+      "China": 1087600,
+      "Taiwan": 648200,
+      "USA": 201800,
+      "Hong Kong": 178400
+    },
+    "August": {
+      "South Korea": 660900,
+      "China": 1018600,
+      "Taiwan": 620700,
+      "USA": 194500,
+      "Hong Kong": 226100
+    },
+    "September": {
+      "South Korea": 645200,
+      "China": 987400,
+      "Taiwan": 598300,
+      "USA": 189600,
+      "Hong Kong": 218900
+    }
+  },
+  "countries": [
+    "South Korea",
+    "China",
+    "Taiwan",
+    "USA",
+    "Hong Kong"
+  ],
+  "metadata": {
+    "last_updated": "2025-10-22",
+    "source": "Japan National Tourism Organization (JNTO)",
+    "api_version": "2.0",
+    "currency": "JPY",
+    "unit": "visitors"
+  }
+}
