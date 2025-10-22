@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Visitors to Japan Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇯🇵 International Visitors to Japan</h1>
+            <p class="subtitle">Official statistics from Japan National Tourism Organization (JNTO)</p>
+        </header>
+
+        <main>
+            <div class="controls">
+                <label for="countrySelect">Select Country:</label>
+                <select id="countrySelect">
+                    <option value="South Korea">🇰🇷 South Korea</option>
+                    <option value="China">🇨🇳 China</option>
+                    <option value="Taiwan">🇹🇼 Taiwan</option>
+                    <option value="USA">🇺🇸 United States</option>
+                    <option value="Hong Kong">🇭🇰 Hong Kong</option>
+                </select>
+            </div>
+
+            <div class="chart-container">
+                <h2 id="chartTitle">Visitor Arrivals from South Korea</h2>
+                <canvas id="tourismChart"></canvas>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="currentYear">2024</h3>
+                    <p id="currentVisitors">8,817,800 visitors</p>
+                    <span class="label">Latest Year</span>
+                </div>
+                <div class="stat-card">
+                    <h3 id="peakYear">2019</h3>
+                    <p id="peakVisitors">5,584,737 visitors</p>
+                    <span class="label">Pre-COVID Peak</span>
+                </div>
+                <div class="stat-card">
+                    <h3 id="recoveryRate">158%</h3>
+                    <p>vs 2019 levels</p>
+                    <span class="label">Recovery Rate</span>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Data Source: <a href="https://www.tourism.jp/en/" target="_blank">Japan National Tourism Organization (JNTO)</a></p>
+            <p>Last Updated: October 2025 | Created for Tourism Analysis</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

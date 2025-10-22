@@ -1,0 +1,152 @@
+{
+  "South Korea": [
+    {
+      "year": 2018,
+      "visitors": 7538952
+    },
+    {
+      "year": 2019,
+      "visitors": 5584737
+    },
+    {
+      "year": 2020,
+      "visitors": 265477
+    },
+    {
+      "year": 2021,
+      "visitors": 51705
+    },
+    {
+      "year": 2022,
+      "visitors": 1123429
+    },
+    {
+      "year": 2023,
+      "visitors": 6958000
+    },
+    {
+      "year": 2024,
+      "visitors": 8817800
+    }
+  ],
+  "China": [
+    {
+      "year": 2018,
+      "visitors": 8380034
+    },
+    {
+      "year": 2019,
+      "visitors": 9594300
+    },
+    {
+      "year": 2020,
+      "visitors": 87400
+    },
+    {
+      "year": 2021,
+      "visitors": 25500
+    },
+    {
+      "year": 2022,
+      "visitors": 195400
+    },
+    {
+      "year": 2023,
+      "visitors": 2426000
+    },
+    {
+      "year": 2024,
+      "visitors": 6981200
+    }
+  ],
+  "Taiwan": [
+    {
+      "year": 2018,
+      "visitors": 4757258
+    },
+    {
+      "year": 2019,
+      "visitors": 4890000
+    },
+    {
+      "year": 2020,
+      "visitors": 171218
+    },
+    {
+      "year": 2021,
+      "visitors": 34567
+    },
+    {
+      "year": 2022,
+      "visitors": 894567
+    },
+    {
+      "year": 2023,
+      "visitors": 4201000
+    },
+    {
+      "year": 2024,
+      "visitors": 6044400
+    }
+  ],
+  "USA": [
+    {
+      "year": 2018,
+      "visitors": 1526407
+    },
+    {
+      "year": 2019,
+      "visitors": 1723861
+    },
+    {
+      "year": 2020,
+      "visitors": 434834
+    },
+    {
+      "year": 2021,
+      "visitors": 98432
+    },
+    {
+      "year": 2022,
+      "visitors": 1345623
+    },
+    {
+      "year": 2023,
+      "visitors": 2044000
+    },
+    {
+      "year": 2024,
+      "visitors": 2724600
+    }
+  ],
+  "Hong Kong": [
+    {
+      "year": 2018,
+      "visitors": 2207804
+    },
+    {
+      "year": 2019,
+      "visitors": 2290792
+    },
+    {
+      "year": 2020,
+      "visitors": 73008
+    },
+    {
+      "year": 2021,
+      "visitors": 15234
+    },
+    {
+      "year": 2022,
+      "visitors": 234567
+    },
+    {
+      "year": 2023,
+      "visitors": 2115000
+    },
+    {
+      "year": 2024,
+      "visitors": 2683500
+    }
+  ]
+}
