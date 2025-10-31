@@ -6,6 +6,7 @@ const compression = require('compression');
 const morgan = require('morgan');
 const cron = require('node-cron');
 const path = require('path');
+const JNTODataIngestion = require('./workers/jntoDataIngestion');
 require('dotenv').config();
 
 const app = express();
@@ -26,8 +27,8 @@ mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('✅ MongoDB connected successfully'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Tourism Data Schema
 const tourismDataSchema = new mongoose.Schema({
@@ -35,8 +36,13 @@ const tourismDataSchema = new mongoose.Schema({
   month: { type: Number, required: true },
   country: { type: String, required: true },
   visitors: { type: Number, required: true },
-  lastUpdated: { type: Date, default: Date.now }
+  lastUpdated: { type: Date, default: Date.now },
+  source: { type: String, default: 'JNTO' },
+  isOfficial: { type: Boolean, default: true }
 });
+
+// Add unique index to prevent duplicates
+tourismDataSchema.index({ year: 1, month: 1, country: 1 }, { unique: true });
 
 const TourismData = mongoose.model('TourismData', tourismDataSchema);
 
@@ -45,17 +51,22 @@ const statsSchema = new mongoose.Schema({
   totalVisitors: Number,
   monthlyGrowth: Number,
   topCountry: String,
-  lastUpdated: { type: Date, default: Date.now }
+  lastUpdated: { type: Date, default: Date.now },
+  lastJNTOUpdate: { type: Date },
+  dataSource: { type: String, default: 'JNTO' }
 });
 
 const Stats = mongoose.model('Stats', statsSchema);
 
-// Initialize sample data
-const initializeData = async () => {
+// JNTO Data Ingestion Setup
+const jntoWorker = new JNTODataIngestion();
+
+// Initialize sample data (fallback if JNTO worker fails)
+const initializeFallbackData = async () => {
   try {
     const count = await TourismData.countDocuments();
     if (count === 0) {
-      console.log('Initializing sample tourism data...');
+      console.log('⚠️  Initializing fallback tourism data...');
       
       const countries = ["South Korea", "China", "Taiwan", "Hong Kong", "USA", "Thailand"];
       const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
@@ -83,17 +94,49 @@ const initializeData = async () => {
               year,
               month,
               country,
-              visitors: monthlyVisitors
+              visitors: monthlyVisitors,
+              source: 'FALLBACK_DATA',
+              isOfficial: false
             });
           });
         }
       });
       
       await TourismData.insertMany(sampleData);
-      console.log('Sample data initialized successfully');
+      console.log('✅ Fallback data initialized successfully');
     }
   } catch (error) {
-    console.error('Error initializing data:', error);
+    console.error('❌ Error initializing fallback data:', error);
+  }
+};
+
+// Run JNTO data ingestion
+const runJNTOIngestion = async () => {
+  try {
+    console.log('🚀 Starting JNTO data ingestion...');
+    
+    // Run the JNTO worker
+    const data = await jntoWorker.fetchJNTOData();
+    
+    if (data && data.length > 0) {
+      await jntoWorker.updateDatabase(data);
+      await jntoWorker.updateStats();
+      
+      // Update last JNTO update timestamp
+      await Stats.findOneAndUpdate(
+        {},
+        { lastJNTOUpdate: new Date() },
+        { upsert: true }
+      );
+      
+      console.log(`✅ JNTO ingestion completed: ${data.length} records processed`);
+    } else {
+      console.log('⚠️  JNTO ingestion returned no data');
+    }
+    
+  } catch (error) {
+    console.error('❌ JNTO ingestion failed:', error);
+    // Continue with existing data
   }
 };
 
@@ -141,9 +184,9 @@ const updateStats = async () => {
       { upsert: true }
     );
     
-    console.log('Stats updated successfully');
+    console.log('📊 Stats updated successfully');
   } catch (error) {
-    console.error('Error updating stats:', error);
+    console.error('❌ Error updating stats:', error);
   }
 };
 
@@ -175,7 +218,9 @@ app.get('/api/tourism-data/yearly', async (req, res) => {
       {
         $group: {
           _id: { year: '$year', country: '$country' },
-          totalVisitors: { $sum: '$visitors' }
+          totalVisitors: { $sum: '$visitors' },
+          isOfficial: { $first: '$isOfficial' },
+          source: { $first: '$source' }
         }
       },
       {
@@ -183,6 +228,8 @@ app.get('/api/tourism-data/yearly', async (req, res) => {
           year: '$_id.year',
           country: '$_id.country',
           visitors: '$totalVisitors',
+          isOfficial: 1,
+          source: 1,
           _id: 0
         }
       },
@@ -204,7 +251,9 @@ app.get('/api/tourism-data/monthly/:year', async (req, res) => {
       {
         $group: {
           _id: { month: '$month', country: '$country' },
-          totalVisitors: { $sum: '$visitors' }
+          totalVisitors: { $sum: '$visitors' },
+          isOfficial: { $first: '$isOfficial' },
+          source: { $first: '$source' }
         }
       },
       {
@@ -212,6 +261,8 @@ app.get('/api/tourism-data/monthly/:year', async (req, res) => {
           month: '$_id.month',
           country: '$_id.country',
           visitors: '$totalVisitors',
+          isOfficial: 1,
+          source: 1,
           _id: 0
         }
       },
@@ -228,7 +279,13 @@ app.get('/api/tourism-data/monthly/:year', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
   try {
     const stats = await Stats.findOne().sort({ lastUpdated: -1 });
-    res.json(stats || { totalVisitors: 0, monthlyGrowth: 0, topCountry: 'N/A' });
+    res.json(stats || { 
+      totalVisitors: 0, 
+      monthlyGrowth: 0, 
+      topCountry: 'N/A',
+      lastJNTOUpdate: null,
+      dataSource: 'FALLBACK'
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -294,6 +351,54 @@ app.get('/api/covid-impact', async (req, res) => {
   }
 });
 
+// Manual JNTO data refresh endpoint
+app.post('/api/refresh-jnto-data', async (req, res) => {
+  try {
+    console.log('🔄 Manual JNTO data refresh requested');
+    await runJNTOIngestion();
+    await updateStats();
+    
+    res.json({ 
+      success: true, 
+      message: 'JNTO data refresh completed',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Manual JNTO refresh failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Data source information
+app.get('/api/data-sources', async (req, res) => {
+  try {
+    const sources = await TourismData.aggregate([
+      {
+        $group: {
+          _id: '$source',
+          count: { $sum: 1 },
+          countries: { $addToSet: '$country' },
+          latestUpdate: { $max: '$lastUpdated' }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+    
+    const stats = await Stats.findOne().sort({ lastUpdated: -1 });
+    
+    res.json({
+      sources,
+      lastJNTOUpdate: stats?.lastJNTOUpdate,
+      lastStatsUpdate: stats?.lastUpdated
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Serve React app for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
@@ -305,19 +410,51 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// Auto-update data every 6 hours
+// Scheduled Jobs
+
+// JNTO Data Ingestion - Every 6 hours
 cron.schedule('0 */6 * * *', () => {
-  console.log('Running scheduled data update...');
+  console.log('⏰ Running scheduled JNTO data ingestion...');
+  runJNTOIngestion();
+});
+
+// Stats Update - Every hour
+cron.schedule('0 * * * *', () => {
+  console.log('⏰ Running scheduled stats update...');
   updateStats();
 });
 
 // Initialize data and start server
-initializeData().then(() => {
-  updateStats();
-  app.listen(PORT, () => {
-    console.log(`🚀 Japan Tourism Dashboard server running on port ${PORT}`);
-    console.log(`📊 Dashboard available at: http://localhost:${PORT}`);
-  });
-});
+const initializeServer = async () => {
+  try {
+    // Initialize fallback data first
+    await initializeFallbackData();
+    
+    // Run initial JNTO ingestion
+    console.log('🚀 Running initial JNTO data ingestion...');
+    await runJNTOIngestion();
+    
+    // Update initial stats
+    await updateStats();
+    
+    // Start server
+    app.listen(PORT, () => {
+      console.log('✅ ===============================================');
+      console.log(`🚀 Japan Tourism Dashboard server running on port ${PORT}`);
+      console.log(`📊 Dashboard available at: http://localhost:${PORT}`);
+      console.log(`🔄 JNTO data ingestion: Every 6 hours`);
+      console.log(`📊 Stats update: Every hour`);
+      console.log(`💾 Database: ${MONGODB_URI.includes('localhost') ? 'Local MongoDB' : 'Remote MongoDB'}`);
+      console.log('✅ ===============================================');
+    });
+    
+  } catch (error) {
+    console.error('❌ Server initialization failed:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+initializeServer();
 
 module.exports = app;
