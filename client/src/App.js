@@ -7,8 +7,17 @@ function Banner({ kind='error', children }) {
   const bg = kind==='error' ? '#ffffff' : '#111111';
   const fg = kind==='error' ? '#000000' : '#ffffff';
   return (
-    <div style={{background:bg,color:fg,border:'1px solid #e5e5e5',padding:12,borderRadius:8}}>{children}</div>
+    <div style={{background:bg,color:fg,border:'1px solid #e5e5e5',padding:12,borderRadius:8,whiteSpace:'pre-wrap'}}>{children}</div>
   );
+}
+
+// small helper to validate JSON arrays/objects
+const isArray = (v)=> Array.isArray(v);
+const isObject = (v)=> v && typeof v === 'object' && !Array.isArray(v);
+
+function cacheBust(url){
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}t=${Date.now()}`;
 }
 
 function Stat({ label, value, hint }) {
@@ -132,6 +141,7 @@ export default function App() {
   const [selCountries, setSelCountries] = useState(['South Korea','China','Taiwan','Hong Kong','USA','Thailand']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [diag, setDiag] = useState([]);
 
   const colors = useMemo(()=>({
     'South Korea':'#ffffff','China':'#e5e5e5','Taiwan':'#cfcfcf','Hong Kong':'#bdbdbd','USA':'#a8a8a8','Thailand':'#949494'
@@ -139,35 +149,42 @@ export default function App() {
 
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  async function loadAll(y){
-    setLoading(true); setError('');
+  async function guardedGet(url, expect='array'){
     try{
-      const [yres,mres,ires,sres,cres] = await Promise.all([
-        axios.get(API_ENDPOINTS.TOURISM_DATA_YEARLY),
-        axios.get(API_ENDPOINTS.TOURISM_DATA_MONTHLY(y)),
-        axios.get(API_ENDPOINTS.COVID_IMPACT),
-        axios.get(API_ENDPOINTS.STATS),
-        axios.get(API_ENDPOINTS.COUNTRIES)
-      ]);
-      const yData = Array.isArray(yres?.data) ? yres.data : [];
-      const mData = Array.isArray(mres?.data) ? mres.data : [];
-      const iData = Array.isArray(ires?.data) ? ires.data : [];
-      const sData = (sres?.data && typeof sres.data === 'object') ? sres.data : {};
-      const cData = Array.isArray(cres?.data) ? cres.data : [];
-
-      setYearly(yData);
-      setMonthly(mData);
-      setImpact(iData);
-      setStats(sData);
-      setCountries(cData);
-
-      if (!Array.isArray(yres?.data) || !Array.isArray(mres?.data) || !Array.isArray(ires?.data) || !Array.isArray(cres?.data)) {
-        setError('Invalid API response received. Please refresh.');
-      }
+      const res = await axios.get(cacheBust(url));
+      const ct = res.headers['content-type']||'';
+      if (!ct.includes('application/json')) throw new Error(`Invalid content-type: ${ct}`);
+      if (expect==='array' && !isArray(res.data)) throw new Error('Expected array JSON');
+      if (expect==='object' && !isObject(res.data)) throw new Error('Expected object JSON');
+      return { ok:true, data: res.data };
     }catch(e){
-      console.error(e);
-      setError('Failed to load data. The service may be warming up.');
-    }finally{ setLoading(false); }
+      return { ok:false, error: `${url} → ${e.message}` };
+    }
+  }
+
+  async function loadAll(y){
+    setLoading(true); setError(''); setDiag([]);
+    const results = await Promise.all([
+      guardedGet(API_ENDPOINTS.TOURISM_DATA_YEARLY,'array'),
+      guardedGet(API_ENDPOINTS.TOURISM_DATA_MONTHLY(y),'array'),
+      guardedGet(API_ENDPOINTS.COVID_IMPACT,'array'),
+      guardedGet(API_ENDPOINTS.STATS,'object'),
+      guardedGet(API_ENDPOINTS.COUNTRIES,'array')
+    ]);
+
+    const [yr, mo, im, st, co] = results;
+    if (yr.ok) setYearly(yr.data); else setYearly([]);
+    if (mo.ok) setMonthly(mo.data); else setMonthly([]);
+    if (im.ok) setImpact(im.data); else setImpact([]);
+    if (st.ok) setStats(st.data); else setStats({});
+    if (co.ok) setCountries(co.data); else setCountries([]);
+
+    const fails = results.filter(r=>!r.ok).map(r=>r.error);
+    if (fails.length){
+      setError('Invalid API response received. Please refresh.');
+      setDiag(fails);
+    }
+    setLoading(false);
   }
 
   useEffect(()=>{ console.log('API Base URL:', API_ENDPOINTS.BASE || 'same-origin'); },[]);
@@ -212,7 +229,11 @@ export default function App() {
 
       <main className="main-content">
         <div className="container" style={{display:'grid',gap:16}}>
-          {error && <Banner>{error}</Banner>}
+          {error && (
+            <Banner>
+              {error}\n\nDiagnostics:\n- {diag.join('\n- ')}
+            </Banner>
+          )}
 
           <div className="stats-section">
             <Stat label="Total Monthly Visitors" value={(stats?.totalVisitors||0).toLocaleString()} hint="From selected month" />
