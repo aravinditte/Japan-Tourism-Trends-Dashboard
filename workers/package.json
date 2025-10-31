@@ -1,0 +1,26 @@
+{
+  "name": "jnto-data-worker",
+  "version": "1.0.0",
+  "description": "JNTO Data Ingestion Worker for Japan Tourism Dashboard",
+  "main": "jntoDataIngestion.js",
+  "scripts": {
+    "start": "node jntoDataIngestion.js",
+    "test": "node jntoDataIngestion.js"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "cheerio": "^1.0.0-rc.12",
+    "mongoose": "^7.5.0",
+    "dotenv": "^16.3.1"
+  },
+  "keywords": [
+    "jnto",
+    "japan",
+    "tourism",
+    "data",
+    "ingestion",
+    "worker"
+  ],
+  "author": "Japan Tourism Dashboard",
+  "license": "MIT"
+}
