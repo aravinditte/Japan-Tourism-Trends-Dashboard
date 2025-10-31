@@ -8,10 +8,14 @@
     "test": "node jntoDataIngestion.js"
   },
   "dependencies": {
-    "axios": "^1.5.0",
+    "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
-    "mongoose": "^7.5.0",
+    "mongoose": "^7.6.3",
     "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=20.18.1",
+    "npm": ">=10.0.0"
   },
   "keywords": [
     "jnto",
