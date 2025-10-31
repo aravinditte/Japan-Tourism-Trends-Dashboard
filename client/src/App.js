@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_ENDPOINTS } from './config/api';
 import Header from './components/Header';
 import StatsCard from './components/StatsCard';
 import YearlyChart from './components/YearlyChart';
@@ -30,11 +31,11 @@ function App() {
       setError(null);
 
       const [yearlyRes, monthlyRes, covidRes, statsRes, countriesRes] = await Promise.all([
-        axios.get('/api/tourism-data/yearly'),
-        axios.get(`/api/tourism-data/monthly/${selectedYear}`),
-        axios.get('/api/covid-impact'),
-        axios.get('/api/stats'),
-        axios.get('/api/countries')
+        axios.get(API_ENDPOINTS.TOURISM_DATA_YEARLY),
+        axios.get(API_ENDPOINTS.TOURISM_DATA_MONTHLY(selectedYear)),
+        axios.get(API_ENDPOINTS.COVID_IMPACT),
+        axios.get(API_ENDPOINTS.STATS),
+        axios.get(API_ENDPOINTS.COUNTRIES)
       ]);
 
       setYearlyData(yearlyRes.data);
@@ -54,7 +55,7 @@ function App() {
   // Fetch monthly data when year changes
   const fetchMonthlyData = async (year) => {
     try {
-      const response = await axios.get(`/api/tourism-data/monthly/${year}`);
+      const response = await axios.get(API_ENDPOINTS.TOURISM_DATA_MONTHLY(year));
       setMonthlyData(response.data);
     } catch (err) {
       console.error('Error fetching monthly data:', err);
@@ -95,6 +96,11 @@ function App() {
   const refreshData = () => {
     fetchData();
   };
+
+  // Log API configuration for debugging
+  useEffect(() => {
+    console.log('API Base URL:', API_ENDPOINTS.BASE || 'Same origin');
+  }, []);
 
   if (loading) {
     return (
