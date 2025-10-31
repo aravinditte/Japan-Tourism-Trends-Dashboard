@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: japan-tourism-dashboard
+    env: node
+    plan: free
+    buildCommand: npm install && cd client && npm install && npm run build && cd ..
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService:
+          type: web
+          name: japan-tourism-dashboard
+          property: port
+    healthCheckPath: /api/stats
